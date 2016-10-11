@@ -1,0 +1,10 @@
+.DS_Store
+*.swp
+
+*.o
+
+asm
+
+*.zoi
+!/test/*.exp.zoi
+
