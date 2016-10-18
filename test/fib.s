@@ -14,7 +14,7 @@ else:
 	jal	x1, fib		# jal fib / call fib
 	lw	x4, -4(x2)
 	sw	x3, -4(x2)
-	addi	x3, x4, -1
+	addi	x3, x4, -2
 	jal	x1, fib		# jal fib / call fib
 	addi	x2, x2, -8
 	lw	x1, 0(x2)
