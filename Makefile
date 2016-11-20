@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -Wall -g -O2 -std=c++11
+CXXFLAGS := -Wall -O2 -std=c++11
 
 TARGET := asm
 OBJS := $(patsubst %.cpp, %.o, $(wildcard *.cpp))

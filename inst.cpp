@@ -25,17 +25,44 @@ string gen_R_type(string op, vector<string> args)
 {
 	string opcode, funct3, funct7, rd, rs1, rs2;
 
-	if (op == "add" || op == "sub")
-		opcode = "0110011";
-	if (op == "add" || op == "sub")
+    if (op == "slli" || op == "srli" || op == "srai")
+        opcode = "0010011";
+    else
+        opcode = "0110011";
+
+    if (op == "slli")
+        funct3 = "001";
+    else if (op == "srli" || op == "srai")
+        funct3 = "101";
+    else if (op == "add" || op == "sub")
 		funct3 = "000";
-	if (op == "add")
+    else if (op == "sll")
+        funct3 = "001";
+    else if (op == "slt")
+        funct3 = "010";
+    else if (op == "sltu")
+        funct3 = "011";
+    else if (op == "xor")
+        funct3 = "100";
+    else if (op == "srl" || op == "sra")
+        funct3 = "101";
+    else if (op == "or")
+        funct3 = "110";
+    else if (op == "and")
+        funct3 = "111";
+
+	if (op == "slli" || op == "srli" || op == "add" || op == "sll" || op == "slt" || op == "sltu"
+            || op == "xor" || op == "srl" || op == "or" || op == "and")
 		funct7 = "0000000";
-	else if (op == "sub")
+	else if (op == "srai" || op == "sub" || op == "sra")
 		funct7 = "0100000";
+
 	rd = reg_to_bin(args[0]);
 	rs1 = reg_to_bin(args[1]);
-	rs2 = reg_to_bin(args[2]);
+    if (op == "slli" || op == "srli" || op == "srai") // shamt
+        rs2 = num_to_bin(stoul(args[2]), 5);
+    else
+        rs2 = reg_to_bin(args[2]);
 
 	return funct7 + rs2 + rs1 + funct3 + rd + opcode; // reversed
 }
@@ -44,16 +71,30 @@ string gen_I_type(string op, vector<string> args)
 {
 	string opcode, funct3, imm, rd, rs1;
 
-	if (op == "addi")
+	if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi")
 		opcode = "0010011";
 	else if (op == "jalr")
 		opcode = "1100111";
 	else if (op == "lw")
 		opcode = "0000011";
-	if (op == "addi" || op == "jalr")
+
+	if (op == "addi")
+		funct3 = "000";
+    else if (op == "slti")
+        funct3 = "010";
+    else if (op == "sltiu")
+        funct3 = "011";
+    else if (op == "xori")
+        funct3 = "100";
+    else if (op == "ori")
+        funct3 = "110";
+    else if (op == "andi")
+        funct3 = "111";
+    else if (op == "jalr")
 		funct3 = "000";
 	else if (op == "lw")
 		funct3 = "010";
+
 	imm = num_to_bin(stoi(args[2]), 12);
 	rd = reg_to_bin(args[0]);
 	rs1 = reg_to_bin(args[1]);
@@ -89,6 +130,11 @@ string gen_SB_type(string op, vector<string> args)
 		funct3 = "100";
 	else if (op == "bge")
 		funct3 = "101";
+    else if (op == "bltu")
+        funct3 = "110";
+    else if (op == "bgeu")
+        funct3 = "111";
+
 	int32_t offset = calc_offset(args[2]);
 	if (abs(offset) > (1 << 13)) {
 		report_error("too far branch");
@@ -100,6 +146,21 @@ string gen_SB_type(string op, vector<string> args)
 	rs2 = reg_to_bin(args[1]);
 
 	return imm.substr(0, 1) + imm.substr(2, 6) + rs2 + rs1 + funct3 + imm.substr(8, 4) + imm.substr(1, 1) + opcode;
+}
+
+string gen_U_type(string op, vector<string> args)
+{
+    string opcode, imm, rd;
+
+    if (op == "lui")
+        opcode = "0110111";
+    else if (op == "auipc")
+        opcode = "0010111";
+
+    imm = num_to_bin(stoul(args[1]), 20);
+    rd = reg_to_bin(args[0]);
+
+    return imm + rd + opcode;
 }
 
 string gen_UJ_type(string op, vector<string> args)
@@ -133,14 +194,19 @@ void process_instruction(vector<string> elems)
 	}
 
     string inst;
-    if (op == "add" || op == "sub")
+    if (op == "slli" || op == "srli" || op == "srai" || op == "add" || op == "sub"
+            || op == "sll" || op == "slt" || op == "sltu" || op == "xor"
+            || op == "srl" || op == "sra" || op == "or" || op == "and")
         inst = gen_R_type(op, args);
-    else if (op == "addi" || op == "lw" || op == "jalr")
+    else if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi"
+            || op == "lw" || op == "jalr")
         inst = gen_I_type(op, args);
     else if (op == "sw")
         inst = gen_S_type(op, args);
-    else if (op == "beq" || op == "bne" || op == "blt" || op == "bge")
+    else if (op == "beq" || op == "bne" || op == "blt" || op == "bge" || op == "bltu" || op == "bgeu")
         inst = gen_SB_type(op, args);
+    else if (op == "lui" || op == "auipc")
+        inst = gen_U_type(op, args);
     else if (op == "jal")
         inst = gen_UJ_type(op, args);
     else if (op == "halt")
