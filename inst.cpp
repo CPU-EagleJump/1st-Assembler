@@ -27,8 +27,11 @@ string gen_R_type(string op, vector<string> args)
 
     if (op == "slli" || op == "srli" || op == "srai")
         opcode = "0010011";
-    else
+    else if (op == "add" || op == "sub" || op == "sll" || op == "slt" || op == "sltu" || op == "xor"
+            || op == "srl" || op == "sra" || op == "or" || op == "and")
         opcode = "0110011";
+    else
+        opcode = "1010011";
 
     if (op == "slli")
         funct3 = "001";
@@ -50,17 +53,59 @@ string gen_R_type(string op, vector<string> args)
         funct3 = "110";
     else if (op == "and")
         funct3 = "111";
+    else if (op == "fsgnj.s")
+        funct3 = "000";
+    else if (op == "fsgnjn.s")
+        funct3 = "001";
+    else if (op == "fsgnjx.s")
+        funct3 = "010";
+    else if (op == "fmin.s")
+        funct3 = "000";
+    else if (op == "fmax.s")
+        funct3 = "001";
+    else if (op == "feq.s")
+        funct3 = "010";
+    else if (op == "flt.s")
+        funct3 = "001";
+    else if (op == "fle.s")
+        funct3 = "000";
+    else
+        funct3 = "000"; // rm = RNE
 
 	if (op == "slli" || op == "srli" || op == "add" || op == "sll" || op == "slt" || op == "sltu"
             || op == "xor" || op == "srl" || op == "or" || op == "and")
 		funct7 = "0000000";
 	else if (op == "srai" || op == "sub" || op == "sra")
 		funct7 = "0100000";
+    else if (op == "fadd.s")
+        funct7 = "0000000";
+    else if (op == "fsub.s")
+        funct7 = "0000100";
+    else if (op == "fmul.s")
+        funct7 = "0001000";
+    else if (op == "fdiv.s")
+        funct7 = "0001100";
+    else if (op == "fsqrt.s")
+        funct7 = "0101100";
+    else if (op == "fsgnj.s" || op == "fsgnjn.s" || op == "fsgnjx.s")
+        funct7 = "0010000";
+    else if (op == "fmin.s" || op == "fmax.s")
+        funct7 = "0010100";
+    else if (op == "fcvt.w.s" || op == "fcvt.wu.s")
+        funct7 = "1100000";
+    else if (op == "feq.s" || op == "flt.s" || op == "fle.s")
+        funct7 = "1010000";
+    else if (op == "fcvt.s.w" || op == "fcvt.s.wu")
+        funct7 = "1101000";
 
 	rd = reg_to_bin(args[0]);
 	rs1 = reg_to_bin(args[1]);
     if (op == "slli" || op == "srli" || op == "srai") // shamt
         rs2 = num_to_bin(stoul(args[2]), 5);
+    else if (op == "fsqrt.s" || op == "fcvt.w.s" || op == "fcvt.s.w")
+        rs2 = "00000";
+    else if (op == "fcvt.wu.s" || op == "fcvt.s.wu")
+        rs2 = "00001";
     else
         rs2 = reg_to_bin(args[2]);
 
@@ -77,6 +122,8 @@ string gen_I_type(string op, vector<string> args)
 		opcode = "1100111";
 	else if (op == "lw")
 		opcode = "0000011";
+    else if (op == "flw")
+        opcode = "0000111";
 
 	if (op == "addi")
 		funct3 = "000";
@@ -92,7 +139,7 @@ string gen_I_type(string op, vector<string> args)
         funct3 = "111";
     else if (op == "jalr")
 		funct3 = "000";
-	else if (op == "lw")
+	else if (op == "lw" || op == "flw")
 		funct3 = "010";
 
 	imm = num_to_bin(stoi(args[2]), 12);
@@ -108,8 +155,11 @@ string gen_S_type(string op, vector<string> args)
 
 	if (op == "sw")
 		opcode = "0100011";
-	if (op == "sw")
-		funct3 = "010";
+    else if (op == "fsw")
+        opcode = "0100111";
+
+    funct3 = "010";
+
 	imm = num_to_bin(stoi(args[2]), 12);
 	rs2 = reg_to_bin(args[0]);
 	rs1 = reg_to_bin(args[1]);
@@ -185,7 +235,7 @@ void process_instruction(vector<string> elems)
     string op = elems[0];
     vector<string> args(elems.begin() + 1, elems.end());
 
-	if (op == "lw" || op == "sw") {
+	if (op == "lw" || op == "flw" || op == "sw" || op == "fsw") {
 		string b = args.back();
 		args.pop_back();
 		vector<string> ps = split_string(b, "()");
@@ -196,12 +246,16 @@ void process_instruction(vector<string> elems)
     string inst;
     if (op == "slli" || op == "srli" || op == "srai" || op == "add" || op == "sub"
             || op == "sll" || op == "slt" || op == "sltu" || op == "xor"
-            || op == "srl" || op == "sra" || op == "or" || op == "and")
+            || op == "srl" || op == "sra" || op == "or" || op == "and"
+            || op == "fadd.s" || op == "fsub.s" || op == "fmul.s" || op == "fdiv.s"
+            || op == "fsqrt.s" || op == "fsgnj.s" || op == "fsgnjn.s" || op == "fsgnjx.s"
+            || op == "fmin.s" || op == "fmax.s" || op == "fcvt.w.s" || op == "fcvt.wu.s"
+            || op == "feq.s" || op == "flt.s" || op == "fle.s" || op == "fcvt.s.w" || op == "fcvt.s.wu")
         inst = gen_R_type(op, args);
     else if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi"
-            || op == "lw" || op == "jalr")
+            || op == "lw" || op == "flw" || op == "jalr")
         inst = gen_I_type(op, args);
-    else if (op == "sw")
+    else if (op == "sw" || op == "fsw")
         inst = gen_S_type(op, args);
     else if (op == "beq" || op == "bne" || op == "blt" || op == "bge" || op == "bltu" || op == "bgeu")
         inst = gen_SB_type(op, args);
