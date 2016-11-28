@@ -15,6 +15,8 @@ string asm_name, zoi_name;
 ifstream asm_file;
 ofstream zoi_file;
 
+bool is_debug = false;
+
 const uint32_t WORD_SIZE = 4;
 
 vector<uint32_t> words;
@@ -24,6 +26,7 @@ map<string, uint32_t> label_map;
 
 string cur_line;
 int cur_line_at;
+vector<uint32_t> inst_lines;
 
 void close_asm_and_exit()
 {
@@ -39,12 +42,6 @@ void init_addr()
 void inc_addr()
 {
     cur_addr += WORD_SIZE;
-}
-
-// place magic number "ZOI!"
-void place_magic_number()
-{
-    words.push_back((uint32_t)'Z' | (uint32_t)'O' << 8 | (uint32_t)'I' << 16 | (uint32_t)'!' << 24);
 }
 
 void process_label(string label)
@@ -100,38 +97,43 @@ void process_lines(bool is_gen)
 					process_directive(elems);
 			}
             else {
-                if (is_gen)
+                if (is_gen) {
                     process_instruction(elems);
+                    inst_lines.push_back(cur_line_at);
+                }
 				inc_addr();
             }
         }
     }
 }
 
-// write words to file
-void write_words()
+void write_word(uint32_t w)
 {
-    int bytes_size = words.size() * 4;
-    char *bytes = new char[bytes_size];
-    for (size_t at = 0; at < words.size(); at++) {
-        uint32_t w = words[at];
-        bytes[at * 4] = (char)w;
-        bytes[at * 4 + 1] = (char)(w >> 8);
-        bytes[at * 4 + 2] = (char)(w >> 16);
-        bytes[at * 4 + 3] = (char)(w >> 24);
-    }
+    char bs[WORD_SIZE];
+    bs[0] = (char)w;
+    bs[1] = (char)(w >> 8);
+    bs[2] = (char)(w >> 16);
+    bs[3] = (char)(w >> 24);
 
-    zoi_file.write(bytes, bytes_size);
+    zoi_file.write(bs, WORD_SIZE);
 }
 
 int main(int argc, char **argv)
 {
-    if (argc < 2) {
+    vector<string> params, options;
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-')
+            options.push_back(argv[i]);
+        else
+            params.push_back(argv[i]);
+    }
+
+    if (params.size() == 0) {
         report_error("no input file");
         exit(1);
     }
 
-    asm_name = argv[1];
+    asm_name = params[0];
     if (asm_name.size() < 2 || asm_name.substr(asm_name.size() - 2) != ".s") {
         report_error("invalid file type");
         exit(1);
@@ -144,19 +146,45 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    for (string opt : options)
+        if (opt == "-g")
+            is_debug = true;
+
 	process_lines(false);
 
 	// return to beginning
 	asm_file.clear();
 	asm_file.seekg(0, ios::beg);
 
-    // place_magic_number();
     process_lines(true);
 
     asm_file.close();
 
     zoi_file.open(zoi_name, ios::out | ios::trunc | ios::binary);
-    write_words();
+
+    // header
+    if (is_debug)
+        zoi_file.write("ZOI?", 4);
+    else
+        zoi_file.write("ZOI!", 4);
+
+    write_word(words.size());
+
+    // text
+    for (uint32_t w : words)
+        write_word(w);
+
+    // debug info
+    if (is_debug) {
+        for (uint32_t l : inst_lines)
+            write_word(l);
+
+        // copy
+        ifstream asm_bin_file;
+        asm_bin_file.open(asm_name, ios::in | ios::binary);
+        zoi_file << asm_bin_file.rdbuf();
+    }
+
 	zoi_file.close();
 }
 

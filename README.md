@@ -10,3 +10,9 @@
 
 If the tests pass, you'll see "PASSED!".
 
+## Usage
+
+    $ ./asm fib.s
+
+    $ ./asm -g fib.s
+
