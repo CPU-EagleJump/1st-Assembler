@@ -58,7 +58,14 @@ void process_label(string label)
 
 uint32_t label_to_addr(string label)
 {
-	return label_map[label];
+    auto it = label_map.find(label);
+    if (it == label_map.end()) {
+        report_error("no such label");
+		report_cur_line();
+		close_asm_and_exit();
+    }
+
+	return it->second;
 }
 
 void process_directive(vector<string> elems)
