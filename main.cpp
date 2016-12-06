@@ -30,8 +30,8 @@ vector<uint32_t> inst_lines;
 
 void close_asm_and_exit()
 {
-	asm_file.close();
-	exit(1);
+    asm_file.close();
+    exit(1);
 }
 
 void init_addr()
@@ -58,11 +58,11 @@ uint32_t label_to_addr(string label)
     auto it = label_map.find(label);
     if (it == label_map.end()) {
         report_error("no such label");
-		report_cur_line();
-		close_asm_and_exit();
+        report_cur_line();
+        close_asm_and_exit();
     }
 
-	return it->second;
+    return it->second;
 }
 
 void process_directive(vector<string> elems)
@@ -93,15 +93,15 @@ void process_lines(bool is_gen)
                 if (!is_gen)
                     process_label(elems[0].substr(0, elems[0].size() - 1));
             } else if (elems[0].front() == '.') {
-				if (is_gen)
-					process_directive(elems);
-			}
+                if (is_gen)
+                    process_directive(elems);
+            }
             else {
                 if (is_gen) {
                     process_instruction(elems);
                     inst_lines.push_back(cur_line_at);
                 }
-				inc_addr();
+                inc_addr();
             }
         }
     }
@@ -150,11 +150,11 @@ int main(int argc, char **argv)
         if (opt == "-g")
             is_debug = true;
 
-	process_lines(false);
+    process_lines(false);
 
-	// return to beginning
-	asm_file.clear();
-	asm_file.seekg(0, ios::beg);
+    // return to beginning
+    asm_file.clear();
+    asm_file.seekg(0, ios::beg);
 
     process_lines(true);
 
@@ -185,6 +185,6 @@ int main(int argc, char **argv)
         zoi_file << asm_bin_file.rdbuf();
     }
 
-	zoi_file.close();
+    zoi_file.close();
 }
 

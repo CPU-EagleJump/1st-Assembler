@@ -11,7 +11,7 @@ vector<string> split_string(const string &str, const string &delims)
     string el;
 
     for (char c : str) {
-		if (delims.find(c) != string::npos) {
+        if (delims.find(c) != string::npos) {
             if (!el.empty()) {
                 elems.push_back(el);
                 el.clear();
@@ -33,22 +33,22 @@ uint32_t bin_to_word(string bin)
 
     for (int i = 0; i < 32; i++) {
         if (bin[31 - i] == '1')
-			word |= UINT32_C(1) << i;
-	}
+            word |= UINT32_C(1) << i;
+    }
 
-	return word;
+    return word;
 }
 
 // num -> string of binary digits
 // len must be < 32
 string num_to_bin(uint32_t num, int len)
 {
-	string bin;
+    string bin;
 
-	for (int i = len - 1; i >= 0; i--) {
-		bin += (num & (UINT32_C(1) << i)) ? '1' : '0';
-	}
+    for (int i = len - 1; i >= 0; i--) {
+        bin += (num & (UINT32_C(1) << i)) ? '1' : '0';
+    }
 
-	return bin;
+    return bin;
 }
 

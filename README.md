@@ -2,11 +2,11 @@
 
 ## Build
 
-	$ make
+    $ make
 
 ## Test
 
-	$ make test
+    $ make test
 
 If the tests pass, you'll see "PASSED!".
 

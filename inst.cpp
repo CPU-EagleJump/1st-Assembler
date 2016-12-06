@@ -8,22 +8,22 @@ using namespace std;
 
 string reg_to_bin(string reg)
 {
-	return num_to_bin(stoul(reg.substr(1)), 5);
+    return num_to_bin(stoul(reg.substr(1)), 5);
 }
 
 string num_to_imm(string num)
 {
-	return num_to_bin(static_cast<uint32_t>(stoi(num)), 12);
+    return num_to_bin(static_cast<uint32_t>(stoi(num)), 12);
 }
 
 int32_t calc_offset(string label)
 {
-	return static_cast<int32_t>(label_to_addr(label)) - static_cast<int32_t>(cur_addr);
+    return static_cast<int32_t>(label_to_addr(label)) - static_cast<int32_t>(cur_addr);
 }
 
 string gen_R_type(string op, vector<string> args)
 {
-	string opcode, funct3, funct7, rd, rs1, rs2;
+    string opcode, funct3, funct7, rd, rs1, rs2;
 
     if (op == "slli" || op == "srli" || op == "srai")
         opcode = "0010011";
@@ -38,7 +38,7 @@ string gen_R_type(string op, vector<string> args)
     else if (op == "srli" || op == "srai")
         funct3 = "101";
     else if (op == "add" || op == "sub")
-		funct3 = "000";
+        funct3 = "000";
     else if (op == "sll")
         funct3 = "001";
     else if (op == "slt")
@@ -72,11 +72,11 @@ string gen_R_type(string op, vector<string> args)
     else
         funct3 = "000"; // rm = RNE
 
-	if (op == "slli" || op == "srli" || op == "add" || op == "sll" || op == "slt" || op == "sltu"
+    if (op == "slli" || op == "srli" || op == "add" || op == "sll" || op == "slt" || op == "sltu"
             || op == "xor" || op == "srl" || op == "or" || op == "and")
-		funct7 = "0000000";
-	else if (op == "srai" || op == "sub" || op == "sra")
-		funct7 = "0100000";
+        funct7 = "0000000";
+    else if (op == "srai" || op == "sub" || op == "sra")
+        funct7 = "0100000";
     else if (op == "fadd.s")
         funct7 = "0000000";
     else if (op == "fsub.s")
@@ -98,8 +98,8 @@ string gen_R_type(string op, vector<string> args)
     else if (op == "fcvt.s.w" || op == "fcvt.s.wu")
         funct7 = "1101000";
 
-	rd = reg_to_bin(args[0]);
-	rs1 = reg_to_bin(args[1]);
+    rd = reg_to_bin(args[0]);
+    rs1 = reg_to_bin(args[1]);
     if (op == "slli" || op == "srli" || op == "srai") // shamt
         rs2 = num_to_bin(stoul(args[2]), 5);
     else if (op == "fsqrt.s" || op == "fcvt.w.s" || op == "fcvt.s.w")
@@ -109,24 +109,24 @@ string gen_R_type(string op, vector<string> args)
     else
         rs2 = reg_to_bin(args[2]);
 
-	return funct7 + rs2 + rs1 + funct3 + rd + opcode; // reversed
+    return funct7 + rs2 + rs1 + funct3 + rd + opcode; // reversed
 }
 
 string gen_I_type(string op, vector<string> args)
 {
-	string opcode, funct3, imm, rd, rs1;
+    string opcode, funct3, imm, rd, rs1;
 
-	if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi")
-		opcode = "0010011";
-	else if (op == "jalr")
-		opcode = "1100111";
-	else if (op == "lw")
-		opcode = "0000011";
+    if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi")
+        opcode = "0010011";
+    else if (op == "jalr")
+        opcode = "1100111";
+    else if (op == "lw")
+        opcode = "0000011";
     else if (op == "flw")
         opcode = "0000111";
 
-	if (op == "addi")
-		funct3 = "000";
+    if (op == "addi")
+        funct3 = "000";
     else if (op == "slti")
         funct3 = "010";
     else if (op == "sltiu")
@@ -138,90 +138,90 @@ string gen_I_type(string op, vector<string> args)
     else if (op == "andi")
         funct3 = "111";
     else if (op == "jalr")
-		funct3 = "000";
-	else if (op == "lw" || op == "flw")
-		funct3 = "010";
+        funct3 = "000";
+    else if (op == "lw" || op == "flw")
+        funct3 = "010";
 
-	imm = num_to_bin(stoi(args[2]), 12);
-	rd = reg_to_bin(args[0]);
-	rs1 = reg_to_bin(args[1]);
+    imm = num_to_bin(stoi(args[2]), 12);
+    rd = reg_to_bin(args[0]);
+    rs1 = reg_to_bin(args[1]);
 
-	return imm + rs1 + funct3 + rd + opcode;
+    return imm + rs1 + funct3 + rd + opcode;
 }
 
 // Special I
 string gen_IS_type(string op, vector<string> args)
 {
-	string opcode, rd;
+    string opcode, rd;
 
     if (op == "inb")
         opcode = "0000010";
 
-	rd = reg_to_bin(args[0]);
+    rd = reg_to_bin(args[0]);
 
-	return num_to_bin(0, 20) + rd + opcode;
+    return num_to_bin(0, 20) + rd + opcode;
 }
 
 string gen_S_type(string op, vector<string> args)
 {
-	string opcode, funct3, imm, rs1, rs2;
+    string opcode, funct3, imm, rs1, rs2;
 
-	if (op == "sw")
-		opcode = "0100011";
+    if (op == "sw")
+        opcode = "0100011";
     else if (op == "fsw")
         opcode = "0100111";
 
     funct3 = "010";
 
-	imm = num_to_bin(stoi(args[2]), 12);
-	rs2 = reg_to_bin(args[0]);
-	rs1 = reg_to_bin(args[1]);
+    imm = num_to_bin(stoi(args[2]), 12);
+    rs2 = reg_to_bin(args[0]);
+    rs1 = reg_to_bin(args[1]);
 
-	return imm.substr(0, 7) + rs2 + rs1 + funct3 + imm.substr(7) + opcode;
+    return imm.substr(0, 7) + rs2 + rs1 + funct3 + imm.substr(7) + opcode;
 }
 
 // Special S
 string gen_SS_type(string op, vector<string> args)
 {
-	string opcode, rs2;
+    string opcode, rs2;
 
-	if (op == "outb")
+    if (op == "outb")
         opcode = "0000110";
 
-	rs2 = reg_to_bin(args[0]);
+    rs2 = reg_to_bin(args[0]);
 
-	return num_to_bin(0, 7) + rs2 + num_to_bin(0, 13) + opcode;
+    return num_to_bin(0, 7) + rs2 + num_to_bin(0, 13) + opcode;
 }
 
 string gen_SB_type(string op, vector<string> args)
 {
-	string opcode, funct3, imm, rs1, rs2;
+    string opcode, funct3, imm, rs1, rs2;
 
-	opcode = "1100011";
-	if (op == "beq")
-		funct3 = "000";
-	else if (op == "bne")
-		funct3 = "001";
-	else if (op == "blt")
-		funct3 = "100";
-	else if (op == "bge")
-		funct3 = "101";
+    opcode = "1100011";
+    if (op == "beq")
+        funct3 = "000";
+    else if (op == "bne")
+        funct3 = "001";
+    else if (op == "blt")
+        funct3 = "100";
+    else if (op == "bge")
+        funct3 = "101";
     else if (op == "bltu")
         funct3 = "110";
     else if (op == "bgeu")
         funct3 = "111";
 
-	int32_t offset = calc_offset(args[2]);
-	if (abs(offset) > (1 << 13)) {
-		report_error("too far branch");
-		report_cur_line();
-		close_asm_and_exit();
-	}
-	imm = num_to_bin(offset, 13);
-	rs1 = reg_to_bin(args[0]);
-	rs2 = reg_to_bin(args[1]);
+    int32_t offset = calc_offset(args[2]);
+    if (abs(offset) > (1 << 13)) {
+        report_error("too far branch");
+        report_cur_line();
+        close_asm_and_exit();
+    }
+    imm = num_to_bin(offset, 13);
+    rs1 = reg_to_bin(args[0]);
+    rs2 = reg_to_bin(args[1]);
 
-	return imm.substr(0, 1) + imm.substr(2, 6) + rs2 + rs1 + funct3 + imm.substr(8, 4) + imm.substr(1, 1) + opcode;
+    return imm.substr(0, 1) + imm.substr(2, 6) + rs2 + rs1 + funct3 + imm.substr(8, 4) + imm.substr(1, 1) + opcode;
 }
 
 string gen_U_type(string op, vector<string> args)
@@ -241,19 +241,19 @@ string gen_U_type(string op, vector<string> args)
 
 string gen_UJ_type(string op, vector<string> args)
 {
-	string opcode, imm, rd;
+    string opcode, imm, rd;
 
-	opcode = "1101111";
-	int32_t offset = calc_offset(args[1]);
-	if (abs(offset) > (1 << 21)) {
-		report_error("too far jump");
-		report_cur_line();
-		close_asm_and_exit();
-	}
-	imm = num_to_bin(offset, 21);
-	rd = reg_to_bin(args[0]);
+    opcode = "1101111";
+    int32_t offset = calc_offset(args[1]);
+    if (abs(offset) > (1 << 21)) {
+        report_error("too far jump");
+        report_cur_line();
+        close_asm_and_exit();
+    }
+    imm = num_to_bin(offset, 21);
+    rd = reg_to_bin(args[0]);
 
-	return imm.substr(0, 1) + imm.substr(10, 10) + imm.substr(9, 1) + imm.substr(1, 8) + rd + opcode;
+    return imm.substr(0, 1) + imm.substr(10, 10) + imm.substr(9, 1) + imm.substr(1, 8) + rd + opcode;
 }
 
 
@@ -262,13 +262,13 @@ void process_instruction(vector<string> elems)
     string op = elems[0];
     vector<string> args(elems.begin() + 1, elems.end());
 
-	if (op == "lw" || op == "flw" || op == "sw" || op == "fsw") {
-		string b = args.back();
-		args.pop_back();
-		vector<string> ps = split_string(b, "()");
-		args.push_back(ps[1]); // reg comes first
-		args.push_back(ps[0]);
-	}
+    if (op == "lw" || op == "flw" || op == "sw" || op == "fsw") {
+        string b = args.back();
+        args.pop_back();
+        vector<string> ps = split_string(b, "()");
+        args.push_back(ps[1]); // reg comes first
+        args.push_back(ps[0]);
+    }
 
     string inst;
     if (op == "slli" || op == "srli" || op == "srai" || op == "add" || op == "sub"
@@ -297,10 +297,10 @@ void process_instruction(vector<string> elems)
     else if (op == "halt")
         inst = num_to_bin(0, 25) + "0000000";
     else {
-		report_error("invalid instruction");
-		report_cur_line();
-		close_asm_and_exit();
-	}
+        report_error("invalid instruction");
+        report_cur_line();
+        close_asm_and_exit();
+    }
 
     words.push_back(bin_to_word(inst));
 }
