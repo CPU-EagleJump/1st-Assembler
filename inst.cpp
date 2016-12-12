@@ -18,7 +18,7 @@ string num_to_imm(string num)
 
 int32_t calc_offset(string label)
 {
-    return static_cast<int32_t>(label_to_addr(label)) - static_cast<int32_t>(cur_addr);
+    return static_cast<int32_t>(label_to_text_addr(label)) - static_cast<int32_t>(cur_text_addr);
 }
 
 string gen_R_type(string op, vector<string> args)
@@ -267,7 +267,10 @@ void process_instruction(vector<string> elems)
         args.pop_back();
         vector<string> ps = split_string(b, "()");
         args.push_back(ps[1]); // reg comes first
-        args.push_back(ps[0]);
+        if (isdigit(ps[0][0]) || ps[0][0] == '-')
+            args.push_back(ps[0]);
+        else
+            args.push_back(to_string(label_to_data_addr(ps[0])));
     }
 
     string inst;
@@ -302,6 +305,6 @@ void process_instruction(vector<string> elems)
         close_asm_and_exit();
     }
 
-    words.push_back(bin_to_word(inst));
+    text_words.push_back(bin_to_word(inst));
 }
 

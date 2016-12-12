@@ -1,3 +1,10 @@
+	.data
+long.0:
+	.long 0x0
+long.10:
+	.long 0x10
+
+	.text
 # R-type
 	slli	x1, x1, 1
 	srli	x1, x1, 1
@@ -22,10 +29,12 @@
 	ori	x1, x1, 1
 	andi	x1, x1, 1
 	lw	x1, 4(x1)
+	lw	x1, long.10(x0)	# static data
 	jalr	x1, x1, 1
 
 # S-type
 	sw	x1, 4(x1)
+	sw	x1, long.10(x0)	# static data
 
 # SB-type
 label:

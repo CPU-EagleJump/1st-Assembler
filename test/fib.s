@@ -1,3 +1,4 @@
+	.text
 	addi	x2, x0, 0	# li x2, 0
 	addi	x3, x0, 30	# li x3, 30
 	jal	x1, fib		# jal fib / call fib

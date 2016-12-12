@@ -1,3 +1,10 @@
+	.data
+long.0:
+	.long 0x0
+long.10:
+	.long 0x10
+
+	.text
 # R-type
 	fadd.s	f1, f1, f1
 	fsub.s	f1, f1, f1
@@ -19,7 +26,9 @@
 
 # I-type
 	flw	f1, 4(x1)
+	flw	f1, long.10(x0)	# static data
 
 # S-type
 	fsw	f1, 4(x1)
+	fsw	f1, long.10(x0)	# static data
 
