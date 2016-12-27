@@ -271,6 +271,12 @@ void process_instruction(vector<string> elems)
             args.push_back(ps[0]);
         else
             args.push_back(to_string(label_to_data_addr(ps[0])));
+    } else if (op == "addi") {
+        string b = args.back();
+        if (!(isdigit(b[0]) || b[0] == '-')) {
+            args.pop_back();
+            args.push_back(to_string(label_to_text_addr(b)));
+        }
     }
 
     string inst;

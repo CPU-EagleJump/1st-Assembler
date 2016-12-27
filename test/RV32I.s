@@ -23,6 +23,7 @@ long.10:
 # I-type
 	addi	x1, x1, 1
 	addi	x1, x1, -1
+	addi	x1, x1, label
 	slti	x1, x1, 1
 	sltiu	x1, x1, 1
 	xori	x1, x1, 1
