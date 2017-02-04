@@ -23,6 +23,7 @@ long.10:
 	fle.s	x1, f1, f1
 	fcvt.s.w	f1, x1
 	fcvt.s.wu	f1, x1
+	fmv.s.x	f1, x1
 
 # I-type
 	flw	f1, 4(x1)

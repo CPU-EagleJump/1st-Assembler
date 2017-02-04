@@ -69,6 +69,8 @@ string gen_R_type(string op, vector<string> args)
         funct3 = "001";
     else if (op == "fle.s")
         funct3 = "000";
+    else if (op == "fmv.s.x")
+        funct3 = "000";
     else
         funct3 = "000"; // rm = RNE
 
@@ -97,12 +99,14 @@ string gen_R_type(string op, vector<string> args)
         funct7 = "1010000";
     else if (op == "fcvt.s.w" || op == "fcvt.s.wu")
         funct7 = "1101000";
+    else if (op == "fmv.s.x")
+        funct7 = "1111000";
 
     rd = reg_to_bin(args[0]);
     rs1 = reg_to_bin(args[1]);
     if (op == "slli" || op == "srli" || op == "srai") // shamt
         rs2 = num_to_bin(stoul(args[2]), 5);
-    else if (op == "fsqrt.s" || op == "fcvt.w.s" || op == "fcvt.s.w")
+    else if (op == "fsqrt.s" || op == "fcvt.w.s" || op == "fcvt.s.w" || op == "fmv.s.x")
         rs2 = "00000";
     else if (op == "fcvt.wu.s" || op == "fcvt.s.wu")
         rs2 = "00001";
@@ -286,7 +290,8 @@ void process_instruction(vector<string> elems)
             || op == "fadd.s" || op == "fsub.s" || op == "fmul.s" || op == "fdiv.s"
             || op == "fsqrt.s" || op == "fsgnj.s" || op == "fsgnjn.s" || op == "fsgnjx.s"
             || op == "fmin.s" || op == "fmax.s" || op == "fcvt.w.s" || op == "fcvt.wu.s"
-            || op == "feq.s" || op == "flt.s" || op == "fle.s" || op == "fcvt.s.w" || op == "fcvt.s.wu")
+            || op == "feq.s" || op == "flt.s" || op == "fle.s"
+            || op == "fcvt.s.w" || op == "fcvt.s.wu" || op == "fmv.s.x")
         inst = gen_R_type(op, args);
     else if (op == "addi" || op == "slti" || op == "sltiu" || op == "xori" || op == "ori" || op == "andi"
             || op == "lw" || op == "flw" || op == "jalr")
