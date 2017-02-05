@@ -12,7 +12,7 @@ $(TARGET): $(OBJS)
 
 .PRECIOUS: test/%.zoi
 test/%.zoi: test/%.s $(TARGET)
-	./$(TARGET) $<
+	./$(TARGET) --no-debug $<
 
 .PHONY: test/%
 test/%: test/%.exp.zoi test/%.zoi

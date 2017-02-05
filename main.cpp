@@ -15,7 +15,7 @@ string asm_name, zoi_name;
 ifstream asm_file;
 ofstream zoi_file;
 
-bool is_debug = false;
+bool is_debug = true;
 
 const uint32_t WORD_SIZE = 4;
 
@@ -186,8 +186,8 @@ int main(int argc, char **argv)
     }
 
     for (string opt : options)
-        if (opt == "-g")
-            is_debug = true;
+        if (opt == "--no-debug")
+            is_debug = false;
 
     process_lines(false);
 
