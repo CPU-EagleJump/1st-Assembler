@@ -48,6 +48,7 @@ label:
 
 # U-type
 	lui	x1, 1
+	lui x1, label
 	auipc	x1, 1
 
 # UJ-type

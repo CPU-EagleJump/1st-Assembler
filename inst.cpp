@@ -275,11 +275,12 @@ void process_instruction(vector<string> elems)
             args.push_back(ps[0]);
         else
             args.push_back(to_string(label_to_data_addr(ps[0])));
-    } else if (op == "addi") {
+    } else if (op == "addi" || op == "lui") {
         string b = args.back();
         if (!(isdigit(b[0]) || b[0] == '-')) {
             args.pop_back();
-            args.push_back(to_string(label_to_text_addr(b)));
+            uint32_t addr = label_to_text_addr(b);
+            args.push_back(to_string(op == "lui" ? addr >> 12 : addr));
         }
     }
 
