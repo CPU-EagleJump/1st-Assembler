@@ -104,8 +104,15 @@ string gen_R_type(string op, vector<string> args)
 
     rd = reg_to_bin(args[0]);
     rs1 = reg_to_bin(args[1]);
-    if (op == "slli" || op == "srli" || op == "srai") // shamt
-        rs2 = num_to_bin(stoul(args[2]), 5);
+    if (op == "slli" || op == "srli" || op == "srai") { // shamt
+        uint32_t shamt_val = stoul(args[2]);
+        if (!(shamt_val < 32)) {
+            report_error("too large immediate");
+            report_cur_line();
+            close_asm_and_exit();
+        }
+        rs2 = num_to_bin(shamt_val, 5);
+    }
     else if (op == "fsqrt.s" || op == "fcvt.w.s" || op == "fcvt.s.w" || op == "fmv.s.x")
         rs2 = "00000";
     else if (op == "fcvt.wu.s" || op == "fcvt.s.wu")
@@ -146,7 +153,14 @@ string gen_I_type(string op, vector<string> args)
     else if (op == "lw" || op == "flw")
         funct3 = "010";
 
-    imm = num_to_bin(stoi(args[2]), 12);
+    int32_t imm_val = stoi(args[2]);
+    if (!(-2048 <= imm_val && imm_val < 2048)) {
+        report_error("too large immediate");
+        report_cur_line();
+        close_asm_and_exit();
+    }
+
+    imm = num_to_bin(imm_val, 12);
     rd = reg_to_bin(args[0]);
     rs1 = reg_to_bin(args[1]);
 
@@ -216,7 +230,7 @@ string gen_SB_type(string op, vector<string> args)
         funct3 = "111";
 
     int32_t offset = calc_offset(args[2]);
-    if (abs(offset) > (1 << 13)) {
+    if (!(-4096 <= offset && offset < 4096)) {
         report_error("too far branch");
         report_cur_line();
         close_asm_and_exit();
@@ -237,7 +251,7 @@ string gen_U_type(string op, vector<string> args)
     else if (op == "auipc")
         opcode = "0010111";
 
-    imm = num_to_bin(stoul(args[1]), 20);
+    imm = num_to_bin(stoul(args[1]) >> 12, 20);
     rd = reg_to_bin(args[0]);
 
     return imm + rd + opcode;
@@ -249,7 +263,7 @@ string gen_UJ_type(string op, vector<string> args)
 
     opcode = "1101111";
     int32_t offset = calc_offset(args[1]);
-    if (abs(offset) > (1 << 21)) {
+    if (!(-524288 <= offset && offset < 524288)) {
         report_error("too far jump");
         report_cur_line();
         close_asm_and_exit();
@@ -280,7 +294,7 @@ void process_instruction(vector<string> elems)
         if (!(isdigit(b[0]) || b[0] == '-')) {
             args.pop_back();
             uint32_t addr = label_to_text_addr(b);
-            args.push_back(to_string(op == "lui" ? addr >> 12 : addr));
+            args.push_back(to_string(addr));
         }
     }
 

@@ -47,9 +47,9 @@ label:
 	bgeu	x1, x1, label
 
 # U-type
-	lui	x1, 1
+	lui	x1, 4096
 	lui x1, label
-	auipc	x1, 1
+	auipc	x1, 4096
 
 # UJ-type
 	jal	x1, label
