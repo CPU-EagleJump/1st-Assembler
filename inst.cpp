@@ -293,8 +293,13 @@ void process_instruction(vector<string> elems)
         string b = args.back();
         if (!(isdigit(b[0]) || b[0] == '-')) {
             args.pop_back();
-            uint32_t addr = label_to_text_addr(b);
-            args.push_back(to_string(addr));
+            if (op == "addi") {
+                uint32_t no_ext = label_to_text_addr(b) & 0xfff;
+                uint32_t ext = (no_ext & 0x800) ? (no_ext | 0xfffff000) : no_ext;
+                args.push_back(to_string((int32_t)ext));
+            }
+            else
+                args.push_back(to_string(label_to_text_addr(b) & 0xfffff000));
         }
     }
 
