@@ -11,11 +11,7 @@ using namespace std;
 #include "common.h"
 
 
-string asm_name, zoi_name;
 ifstream asm_file;
-ofstream zoi_file;
-
-bool is_debug = true;
 
 const uint32_t WORD_SIZE = 4;
 
@@ -146,7 +142,7 @@ void process_lines(bool is_gen)
     }
 }
 
-void write_word(uint32_t w)
+void write_word(ofstream &ofs, uint32_t w)
 {
     char bs[WORD_SIZE];
     bs[0] = (char)w;
@@ -154,7 +150,7 @@ void write_word(uint32_t w)
     bs[2] = (char)(w >> 16);
     bs[3] = (char)(w >> 24);
 
-    zoi_file.write(bs, WORD_SIZE);
+    ofs.write(bs, WORD_SIZE);
 }
 
 int main(int argc, char **argv)
@@ -167,17 +163,18 @@ int main(int argc, char **argv)
             params.push_back(argv[i]);
     }
 
+    // params
+
     if (params.size() == 0) {
         report_error("no input file");
         exit(1);
     }
 
-    asm_name = params[0];
+    string asm_name = params[0];
     if (asm_name.size() < 2 || asm_name.substr(asm_name.size() - 2) != ".s") {
         report_error("invalid file type");
         exit(1);
     }
-    zoi_name = asm_name.substr(0, asm_name.size() - 2) + ".zoi";
 
     asm_file.open(asm_name, ios::in);
     if (asm_file.fail()) {
@@ -185,9 +182,15 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    for (string opt : options)
-        if (opt == "--no-debug")
+    // options
+
+    bool is_debug = true, is_ascii = false;
+    for (string opt : options) {
+        if (opt == "-no-debug")
             is_debug = false;
+        if (opt == "-ascii")
+            is_ascii = true;
+    }
 
     process_lines(false);
 
@@ -199,36 +202,58 @@ int main(int argc, char **argv)
 
     asm_file.close();
 
-    zoi_file.open(zoi_name, ios::out | ios::trunc | ios::binary);
 
-    // header
-    if (is_debug)
-        zoi_file.write("ZOI?", 4);
-    else
-        zoi_file.write("ZOI!", 4);
+    string base_name = asm_name.substr(0, asm_name.size() - 2);
 
-    write_word(data_words.size());
-    write_word(text_words.size());
+    if (is_ascii) {
+        string data_name = base_name + ".zoi.data", text_name = base_name + ".zoi.text";
+        ofstream data_file, text_file;
 
-    // data
-    for (uint32_t w : data_words)
-        write_word(w);
+        data_file.open(data_name, ios::out | ios::trunc);
+        for (uint32_t w : data_words) {
+            data_file << num_to_bin(w, 32) << endl;
+        }
+        data_file.close();
 
-    // text
-    for (uint32_t w : text_words)
-        write_word(w);
+        text_file.open(text_name, ios::out | ios::trunc);
+        for (uint32_t w : text_words) {
+            text_file << num_to_bin(w, 32) << endl;
+        }
+        text_file.close();
+    } else {
+        string zoi_name = base_name + ".zoi";
+        ofstream zoi_file;
+        zoi_file.open(zoi_name, ios::out | ios::trunc | ios::binary);
 
-    // debug info
-    if (is_debug) {
-        for (uint32_t l : inst_lines)
-            write_word(l);
+        // header
+        if (is_debug)
+            zoi_file.write("ZOI?", 4);
+        else
+            zoi_file.write("ZOI!", 4);
 
-        // copy
-        ifstream asm_bin_file;
-        asm_bin_file.open(asm_name, ios::in | ios::binary);
-        zoi_file << asm_bin_file.rdbuf();
+        write_word(zoi_file, data_words.size());
+        write_word(zoi_file, text_words.size());
+
+        // data
+        for (uint32_t w : data_words)
+            write_word(zoi_file, w);
+
+        // text
+        for (uint32_t w : text_words)
+            write_word(zoi_file, w);
+
+        // debug info
+        if (is_debug) {
+            for (uint32_t l : inst_lines)
+                write_word(zoi_file, l);
+
+            // copy
+            ifstream asm_bin_file;
+            asm_bin_file.open(asm_name, ios::in | ios::binary);
+            zoi_file << asm_bin_file.rdbuf();
+        }
+
+        zoi_file.close();
     }
-
-    zoi_file.close();
 }
 

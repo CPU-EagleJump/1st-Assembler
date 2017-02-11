@@ -14,5 +14,5 @@ If the tests pass, you'll see "PASSED!".
 
     $ ./asm fib.s
 
-    $ ./asm -g fib.s
+    $ ./asm -ascii fib.s
 
