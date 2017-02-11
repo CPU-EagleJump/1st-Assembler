@@ -167,18 +167,6 @@ string gen_I_type(string op, vector<string> args)
     return imm + rs1 + funct3 + rd + opcode;
 }
 
-// Special I
-string gen_IS_type(string op, vector<string> args)
-{
-    string opcode, rd;
-
-    if (op == "inb")
-        opcode = "0000010";
-
-    rd = reg_to_bin(args[0]);
-
-    return num_to_bin(0, 20) + rd + opcode;
-}
 
 string gen_S_type(string op, vector<string> args)
 {
@@ -196,19 +184,6 @@ string gen_S_type(string op, vector<string> args)
     rs1 = reg_to_bin(args[1]);
 
     return imm.substr(0, 7) + rs2 + rs1 + funct3 + imm.substr(7) + opcode;
-}
-
-// Special S
-string gen_SS_type(string op, vector<string> args)
-{
-    string opcode, rs2;
-
-    if (op == "outb")
-        opcode = "0000110";
-
-    rs2 = reg_to_bin(args[0]);
-
-    return num_to_bin(0, 7) + rs2 + num_to_bin(0, 13) + opcode;
 }
 
 string gen_SB_type(string op, vector<string> args)
@@ -274,6 +249,33 @@ string gen_UJ_type(string op, vector<string> args)
     return imm.substr(0, 1) + imm.substr(10, 10) + imm.substr(9, 1) + imm.substr(1, 8) + rd + opcode;
 }
 
+// special
+string gen_SP_type(string op, vector<string> args)
+{
+    string opcode, rd, funct3, rs1;
+
+    opcode = "0001011";
+
+    if (op == "inb")
+        funct3 = "001";
+    else if (op == "outb")
+        funct3 = "010";
+    else
+        funct3 = "100";
+
+    if (op == "inb")
+        rd = reg_to_bin(args[0]);
+    else
+        rd = "00000";
+
+    if (op == "outb")
+        rs1 = reg_to_bin(args[0]);
+    else
+        rs1 = "00000";
+
+    return num_to_bin(0, 12) + rs1 + funct3 + rd + opcode;
+}
+
 
 void process_instruction(vector<string> elems)
 {
@@ -324,12 +326,8 @@ void process_instruction(vector<string> elems)
         inst = gen_U_type(op, args);
     else if (op == "jal")
         inst = gen_UJ_type(op, args);
-    else if (op == "inb")
-        inst = gen_IS_type(op, args);
-    else if (op == "outb")
-        inst = gen_SS_type(op, args);
-    else if (op == "halt")
-        inst = num_to_bin(0, 25) + "0000000";
+    else if (op == "inb" || op == "outb" || op == "halt")
+        inst = gen_SP_type(op, args);
     else {
         report_error("invalid instruction");
         report_cur_line();
